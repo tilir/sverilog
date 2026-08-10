@@ -1,33 +1,42 @@
-# test vector copy
-ADD_CUSTOM_TARGET(copy_vectors_rmc
-  COMMAND ${CMAKE_COMMAND} -E copy
-    ${CMAKE_CURRENT_SOURCE_DIR}/sillyvectors.txt ${CMAKE_CURRENT_SOURCE_DIR}/switch.txt
-    ${CMAKE_CURRENT_BINARY_DIR}/
-)
+# This directory intentionally contains independent, single-file experiments.
+# A new <name>.sv file only needs to provide `module <name>`; CMake discovers
+# it automatically and creates rmc_<name> and run_rmc_<name> targets.
 
-SET(SIMV rmc)
-SET(SRC
-  ${CMAKE_CURRENT_SOURCE_DIR}/readmem_check.sv
-  ${CMAKE_CURRENT_SOURCE_DIR}/randomize.sv
-  ${CMAKE_CURRENT_SOURCE_DIR}/forloop.sv
-  ${CMAKE_CURRENT_SOURCE_DIR}/dynarr.sv
-  ${CMAKE_CURRENT_SOURCE_DIR}/alwayscomb.sv
-  ${CMAKE_CURRENT_SOURCE_DIR}/top.sv
-)
+FILE(GLOB RMC_DATA CONFIGURE_DEPENDS
+  "${CMAKE_CURRENT_SOURCE_DIR}/*.txt"
+  "${CMAKE_CURRENT_SOURCE_DIR}/*.mem"
+  "${CMAKE_CURRENT_SOURCE_DIR}/*.hex")
 
-# build sv files to testbench + dut
-ADD_CUSTOM_TARGET(${SIMV}
-  COMMAND ${COMPILER} ${OPTS} ${SRC} --Mdir ${CMAKE_CURRENT_BINARY_DIR} -o ${SIMV}
-  COMMENT "Compile sv files with ${COMPILER}"
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  DEPENDS ${VERILOG_SOURCES})
+ADD_CUSTOM_TARGET(copy_rmc_data
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          ${RMC_DATA} ${CMAKE_CURRENT_BINARY_DIR}
+  DEPENDS ${RMC_DATA})
 
-# run testbench
-ADD_CUSTOM_TARGET(runsim_${SIMV}
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${SIMV}
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  DEPENDS ${SIMV})
-ADD_DEPENDENCIES(runsim_${SIMV} copy_vectors_rmc)
+FILE(GLOB RMC_SOURCES CONFIGURE_DEPENDS
+  "${CMAKE_CURRENT_SOURCE_DIR}/*.sv")
 
-# mandatory
-ADD_DEPENDENCIES(build-all runsim_${SIMV})
+SET(RMC_RUN_TARGETS)
+FOREACH(RMC_SOURCE IN LISTS RMC_SOURCES)
+  GET_FILENAME_COMPONENT(RMC_NAME ${RMC_SOURCE} NAME_WE)
+  SET(RMC_BUILD_TARGET rmc_${RMC_NAME})
+  SET(RMC_RUN_TARGET run_rmc_${RMC_NAME})
+
+  ADD_CUSTOM_TARGET(${RMC_BUILD_TARGET}
+    COMMAND ${COMPILER} --binary -Wall -Wno-fatal -Wno-DECLFILENAME
+            --top-module ${RMC_NAME} ${RMC_SOURCE}
+            --Mdir ${CMAKE_CURRENT_BINARY_DIR}/${RMC_NAME}
+            -o ${RMC_NAME}
+    COMMENT "Compile RMC experiment: ${RMC_NAME}"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS ${RMC_SOURCE})
+
+  ADD_CUSTOM_TARGET(${RMC_RUN_TARGET}
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${RMC_NAME}/${RMC_NAME}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS ${RMC_BUILD_TARGET})
+  ADD_DEPENDENCIES(${RMC_RUN_TARGET} copy_rmc_data)
+  LIST(APPEND RMC_RUN_TARGETS ${RMC_RUN_TARGET})
+ENDFOREACH()
+
+ADD_CUSTOM_TARGET(rmc DEPENDS ${RMC_RUN_TARGETS})
+ADD_DEPENDENCIES(build-all rmc)

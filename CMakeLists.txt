@@ -1,5 +1,5 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.11)
-PROJECT(SVerilog)
+cmake_minimum_required(VERSION 3.11)
+project(SVerilog LANGUAGES NONE)
 
 SET(SIMULATOR "verilator" CACHE STRING "SystemVerilog simulator (verilator or iverilog)")
 SET_PROPERTY(CACHE SIMULATOR PROPERTY STRINGS verilator iverilog)
@@ -15,32 +15,18 @@ ENDIF()
 
 MESSAGE(STATUS "SystemVerilog simulator: ${SIMULATOR} (${COMPILER})")
 
-SET(OPTS
-  -cc
-  --timing
-  --build
-  --main
-  --exe)
-
 ADD_CUSTOM_TARGET(build-all ALL)
+include(cmake/AddSvTest.cmake)
 
 add_subdirectory(combinational)
 add_subdirectory(muxes)
+add_subdirectory(latches)
+add_subdirectory(counter)
 
 IF(SIMULATOR STREQUAL "verilator")
-  add_subdirectory(latches)
   add_subdirectory(rmc)
-  add_subdirectory(counter)
   add_subdirectory(ram)
 ELSE()
   MESSAGE(STATUS
-    "Icarus build: skipping legacy latches, rmc, counter, and ram testbenches")
+    "Icarus build: skipping rmc and interface-based ram experiments")
 ENDIF()
-
-# Public entry point for building and running only the combinational examples.
-ADD_CUSTOM_TARGET(combinational
-  DEPENDS runsim_combinatorial)
-
-# Public entry point for building and running only the mux examples.
-ADD_CUSTOM_TARGET(muxes
-  DEPENDS runsim_muxes)

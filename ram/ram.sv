@@ -1,29 +1,31 @@
-//-----------------------------------------------------------------------------
-//
-// simple RAM with some interfaces
-//
-//-----------------------------------------------------------------------------
+// Simple synchronous RAM used to experiment with interfaces and modports.
 
-interface DataBus();
-  logic [7:0] Addr, Data;
-  modport TestR (inout Addr, inout Data);
-  modport Ram (inout Addr, inout Data);
+interface DataBus;
+  logic [7:0] Addr;
+  logic [7:0] WriteData;
+  logic [7:0] ReadData;
+
+  modport Test (output Addr, WriteData, input ReadData);
+  modport Ram  (input Addr, WriteData, output ReadData);
 endinterface
 
-interface CtrlBus();
-  logic RWn;
-  modport TestR (output RWn);
-  modport Ram (input RWn);
+interface CtrlBus;
+  logic WriteEnable;
+
+  modport Test (output WriteEnable);
+  modport Ram  (input WriteEnable);
 endinterface
 
-module ram(input Clk, DataBus.Ram DataInt, CtrlBus.Ram CtrlInt);
-  reg [7:0] mem[0:255];
+module ram(input logic Clk, DataBus.Ram DataInt, CtrlBus.Ram CtrlInt);
+  timeunit 1ns;
+  timeprecision 1ps;
 
-  always @ (posedge Clk) 
-    if (CtrlInt.RWn)
-      DataInt.Data = mem[DataInt.Addr];
+  logic [7:0] mem [0:255];
 
-  always @ (posedge Clk) 
-    if (!CtrlInt.RWn)
-      mem[DataInt.Addr] = DataInt.Data;
+  always_ff @(posedge Clk) begin
+    if (CtrlInt.WriteEnable)
+      mem[DataInt.Addr] <= DataInt.WriteData;
+    else
+      DataInt.ReadData <= mem[DataInt.Addr];
+  end
 endmodule

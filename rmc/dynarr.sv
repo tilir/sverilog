@@ -9,7 +9,7 @@
 //
 //-----------------------------------------------------------------------------
 
-module dynarr_check;
+module dynarr;
   int d1[], d2[], q1[$] = {3, 4}, q2[$] = {5, 9}, h1[*], h2[string];
   int idx = 1, file;
   string s;
@@ -46,4 +46,3 @@ module dynarr_check;
       end
     end
 endmodule
-

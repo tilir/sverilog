@@ -1,22 +1,6 @@
-SET(SIMV latches)
-SET(SRC
-  ${CMAKE_SOURCE_DIR}/util/util.sv
-  ${CMAKE_CURRENT_SOURCE_DIR}/latches.sv
-  ${CMAKE_CURRENT_SOURCE_DIR}/latches_testbench.sv
-)
-
-# build sv files to testbench + dut
-ADD_CUSTOM_TARGET(${SIMV}
-  COMMAND ${COMPILER} ${OPTS} ${SRC} --Mdir ${CMAKE_CURRENT_BINARY_DIR} -o ${SIMV}
-  COMMENT "Compile sv files with ${COMPILER}"
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  DEPENDS ${VERILOG_SOURCES})
-
-# run testbench
-ADD_CUSTOM_TARGET(runsim_${SIMV}
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${SIMV}
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  DEPENDS ${SIMV})
-
-# mandatory
-ADD_DEPENDENCIES(build-all runsim_${SIMV})
+ADD_SV_TEST(latches
+  TOP latches_testbench
+  SOURCES
+    ${CMAKE_SOURCE_DIR}/util/tb_util.sv
+    ${CMAKE_CURRENT_SOURCE_DIR}/latches.sv
+    ${CMAKE_CURRENT_SOURCE_DIR}/latches_testbench.sv)

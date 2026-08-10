@@ -5,13 +5,12 @@
 //-----------------------------------------------------------------------------
 
 module readmem_check;
-  logic [3:0] data [10:0];
-  integer i;
+  logic [3:0] data [0:7];
   initial
     begin
       $display("read mem tests");
       $readmemb("sillyvectors.txt", data);
-      for (i = 0; i < 10; i = i + 1)
+      foreach (data[i])
         $display("%d: %b", i, data[i]);
     end
 endmodule

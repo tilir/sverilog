@@ -6,9 +6,13 @@
 
 module randomize;
   class Packet;
-   logic [7:0] b;
+    rand int unsigned b;
 
-/* unsupported in verilator, but pretty
+    function int unsigned value();
+      return b;
+    endfunction
+
+/* A more involved follow-up experiment:
     rand int a[];
     constraint a_c {
       a.size == 20;
@@ -23,11 +27,17 @@ module randomize;
   initial
     begin
       Packet p1;
+      int unsigned randomized_value;
       p1 = new();
       if (!1'(p1.randomize())) begin
-        $display("Randomization Error");
+        $fatal(1, "Randomization error");
+      end
+      randomized_value = p1.value();
+      if ($isunknown(randomized_value)) begin
+        $fatal(1, "Randomized value contains X or Z");
       end
       // $display("Value of p1.a is %p", p1.a); 
-      $display("Value of p1.b is %b", p1.b);
+      $display("Value of p1.b is %0d (0x%08h)",
+               randomized_value, randomized_value);
     end
 endmodule

@@ -1,35 +1,6 @@
-SET(MUXES_SIM muxes_sim)
-SET(MUXES_EXE muxes)
-SET(MUXES_SRC
-  ${CMAKE_SOURCE_DIR}/util/tb_util.sv
-  ${CMAKE_CURRENT_SOURCE_DIR}/muxes.sv
-  ${CMAKE_CURRENT_SOURCE_DIR}/muxes_testbench.sv
-)
-
-IF(SIMULATOR STREQUAL "verilator")
-  ADD_CUSTOM_TARGET(${MUXES_SIM}
-    COMMAND ${COMPILER} --binary --trace-fst -Wall -Wno-fatal
-            -Wno-DECLFILENAME -Wno-WIDTHEXPAND
-            --top-module muxes_testbench
-            ${MUXES_SRC} --Mdir ${CMAKE_CURRENT_BINARY_DIR} -o ${MUXES_EXE}
-    COMMENT "Compile muxes testbench with Verilator"
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    DEPENDS ${MUXES_SRC})
-  SET(MUXES_COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${MUXES_EXE})
-ELSE()
-  SET(MUXES_IMAGE ${CMAKE_CURRENT_BINARY_DIR}/${MUXES_EXE}.vvp)
-  ADD_CUSTOM_TARGET(${MUXES_SIM}
-    COMMAND ${COMPILER} -g2012 -s muxes_testbench
-            -o ${MUXES_IMAGE} ${MUXES_SRC}
-    COMMENT "Compile muxes testbench with Icarus Verilog"
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    DEPENDS ${MUXES_SRC})
-  SET(MUXES_COMMAND ${SIMULATOR_RUNNER} ${MUXES_IMAGE})
-ENDIF()
-
-ADD_CUSTOM_TARGET(runsim_muxes
-  COMMAND ${MUXES_COMMAND}
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  DEPENDS ${MUXES_SIM})
-
-ADD_DEPENDENCIES(build-all runsim_muxes)
+ADD_SV_TEST(muxes
+  TOP muxes_testbench
+  SOURCES
+    ${CMAKE_SOURCE_DIR}/util/tb_util.sv
+    ${CMAKE_CURRENT_SOURCE_DIR}/muxes.sv
+    ${CMAKE_CURRENT_SOURCE_DIR}/muxes_testbench.sv)

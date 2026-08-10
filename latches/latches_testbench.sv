@@ -1,66 +1,72 @@
-//-----------------------------------------------------------------------------
-//
-// latches testbench
-//
-//-----------------------------------------------------------------------------
+// Self-checking tests for the two SR latch implementations.
+// Runtime options: +verbose, +trace.
 
-program automatic latches_testbench(output logic s, r, q, q_not, ql, ql_not);
-  initial
-    begin
-      q = 1'bx; q_not = 1'bx;
+module latches_testbench;
+  import tb_util_pkg::*;
 
-/*
-      // verilator is bad with X's
-      // initial: S = 0, R = 0
-      s = 1'b0; r = 1'b0;
-      #10
-      latches_top.u.scheck("q-initial", q, 1'bx);
-      latches_top.u.scheck("qnot-initial", q_not, 1'bx);
-*/
+  logic s, r;
+  wire naive_q, naive_q_not;
+  wire rtl_q, rtl_q_not;
 
-      // reset: S = 0, R = 1
-      s = 1'b0; r = 1'b1;
-      #10 
-      latches_top.u.scheck("q-reset", q, 1'b0);
-      latches_top.u.scheck("qnot-reset", q_not, 1'b1);
-      latches_top.u.scheck("ql-reset", ql, 1'b0);
-      latches_top.u.scheck("qlnot-reset", ql_not, 1'b1);
+  sr_latch_naive naive_dut(s, r, naive_q, naive_q_not);
+  sr_latch rtl_dut(s, r, rtl_q, rtl_q_not);
 
-      // keep 0: S = 0, R = 0
-      s = 1'b0; r = 1'b0;
-      #10
-      latches_top.u.scheck("q-keep", q, 1'b0);
-      latches_top.u.scheck("qnot-keep", q_not, 1'b1);
-      latches_top.u.scheck("ql-keep", ql, 1'b0);
-      latches_top.u.scheck("qlnot-keep", ql_not, 1'b1);
+  task automatic apply_and_check(input logic next_s,
+                                 input logic next_r,
+                                 input logic expected_q,
+                                 input logic expected_q_not,
+                                 input string operation);
+    s = next_s;
+    r = next_r;
+    // The gate-level model has #1 feedback delays; allow it to settle.
+    #5;
+    check("naive.Q", naive_q, expected_q, 1, operation);
+    check("naive.Q_not", naive_q_not, expected_q_not, 1, operation);
+    check("rtl.Q", rtl_q, expected_q, 1, operation);
+    check("rtl.Q_not", rtl_q_not, expected_q_not, 1, operation);
+  endtask
 
-      // set: S = 1, R = 0
-      s = 1'b1; r = 1'b0;
-      #10
-      latches_top.u.scheck("q-set", q, 1'b1);
-      latches_top.u.scheck("qnot-set", q_not, 1'b0);
-      latches_top.u.scheck("ql-set", ql, 1'b1);
-      latches_top.u.scheck("qlnot-set", ql_not, 1'b0);
+  task automatic test_reset_and_hold;
+    begin_test("reset and hold 0");
+    apply_and_check(0, 1, 0, 1, "reset S=0 R=1");
+    apply_and_check(0, 0, 0, 1, "hold reset value S=0 R=0");
+    end_test("reset and hold 0");
+  endtask
 
-      // keep 1: S = 0, R = 0
-      s = 1'b0; r = 1'b0;
-      #10
-      latches_top.u.scheck("q-keep", q, 1'b1);
-      latches_top.u.scheck("qnot-keep", q_not, 1'b0);
-      latches_top.u.scheck("ql-keep", ql, 1'b1);
-      latches_top.u.scheck("qlnot-keep", ql_not, 1'b0);
+  task automatic test_set_and_hold;
+    begin_test("set and hold 1");
+    apply_and_check(1, 0, 1, 0, "set S=1 R=0");
+    apply_and_check(0, 0, 1, 0, "hold set value S=0 R=0");
+    end_test("set and hold 1");
+  endtask
 
-      $display("latches: all tests passed!");
+  task automatic test_forbidden_and_recovery;
+    begin_test("forbidden and recovery");
+    apply_and_check(1, 1, 0, 0, "forbidden S=1 R=1");
 
-      // need finsh because signals still coming from incorrect naive latch
-      $finish;
+    // Do not release directly to S=R=0: a physical SR latch may resolve to
+    // either state. Drive it to a known state first, then test normal use.
+    apply_and_check(0, 1, 0, 1, "recover with reset");
+    apply_and_check(1, 0, 1, 0, "recover with set");
+    apply_and_check(0, 0, 1, 0, "hold after recovery");
+    end_test("forbidden and recovery");
+  endtask
+
+  initial begin
+    init_tests();
+    if ($test$plusargs("trace")) begin
+      $dumpfile("latches.fst");
+      $dumpvars(0, latches_testbench);
     end
-endprogram
 
-module latches_top;
-  logic s, r, q, q_not, ql, ql_not;
-  util#(0) u();
-  sr_latch_naive srnaive(s, r, q, q_not);
-  sr_latch sr(s, r, ql, ql_not);
-  latches_testbench tb(s, r, q, q_not, ql, ql_not);
+    // Establish a known state before observing either feedback loop.
+    s = 0;
+    r = 1;
+    #5;
+
+    test_reset_and_hold();
+    test_set_and_hold();
+    test_forbidden_and_recovery();
+    finish_tests("latches");
+  end
 endmodule
