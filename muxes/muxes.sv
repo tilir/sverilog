@@ -9,7 +9,7 @@ module mux2(input logic[3:0] d0, d1,
             input logic s,
             output logic[3:0] y);
   assign y = s ? d1 : d0;
-endmodule;
+endmodule
 
 // Harris and Harris example 4.6
 // behavioral approach
@@ -17,14 +17,16 @@ module mux4(input logic[3:0] d0, d1, d2, d3,
             input logic[1:0] s,
             output logic[3:0] y);
   assign y = s[1] ? (s[0] ? d3 : d2) : (s[0] ? d1 : d0);
-endmodule;
+endmodule
 
 // Harris and Harris example 4.10
+`ifndef SYNTHESIS
 module tristate(input logic[3:0] a,
                 input logic en,
                 output wire[3:0] y);
   assign y = en ? a : 4'bz;
-endmodule;
+endmodule
+`endif
 
 // Harris and Harris example 4.14
 // structural approach
@@ -35,15 +37,16 @@ module mux4structural(input logic[3:0] d0, d1, d2, d3,
   mux2 lowmux(d0, d1, s[0], low);
   mux2 highmux(d2, d3, s[0], high);
   mux2 finalmux(low, high, s[1], y);
-endmodule;
+endmodule
 
 // Harris and Harris example 4.15
+`ifndef SYNTHESIS
 module mux2tristate(input logic[3:0] d0, d1,
                     input logic s,
                     output wire[3:0] y);
   tristate t0(d0, ~s, y);
   tristate t1(d1, s, y);
-endmodule;
+endmodule
 
 // even more structural approach
 module mux4tristate(input logic[3:0] d0, d1, d2, d3,
@@ -53,4 +56,5 @@ module mux4tristate(input logic[3:0] d0, d1, d2, d3,
   mux2tristate lowmux(d0, d1, s[0], low);
   mux2tristate highmux(d2, d3, s[0], high);
   mux2tristate finalmux(low, high, s[1], y);
-endmodule;
+endmodule
+`endif

@@ -1,0 +1,9 @@
+# Out-of-source CMake builds
+/build*/
+obj_dir/
+
+# Simulation output
+*.fst
+*.vcd
+*.vvp
+coverage.dat

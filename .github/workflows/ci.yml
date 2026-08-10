@@ -8,10 +8,6 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   simulation:
     name: ${{ matrix.name }}
@@ -51,7 +47,8 @@ jobs:
         run: >-
           cmake -S . -B build
           -DSIMULATOR=${{ matrix.simulator }}
+          -DENABLE_RMC=OFF
           -DCMAKE_BUILD_TYPE=Release
 
       - name: Build and run tests
-        run: cmake --build build --parallel 2
+        run: cmake --build build --parallel 1
