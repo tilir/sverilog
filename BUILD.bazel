@@ -1,0 +1,28 @@
+test_suite(
+    name = "verilator_tests",
+    tests = [
+        "//combinational:test_verilator",
+        "//counter:test_verilator",
+        "//latches:test_verilator",
+        "//muxes:test_verilator",
+        "//ram:test_verilator",
+    ],
+)
+
+test_suite(
+    name = "iverilog_tests",
+    tests = [
+        "//combinational:test_iverilog",
+        "//counter:test_iverilog",
+        "//latches:test_iverilog",
+        "//muxes:test_iverilog",
+    ],
+)
+
+test_suite(
+    name = "all_tests",
+    tests = [
+        ":iverilog_tests",
+        ":verilator_tests",
+    ],
+)

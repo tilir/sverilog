@@ -1,0 +1,4 @@
+exports_files(
+    ["tb_util.sv"],
+    visibility = ["//visibility:public"],
+)

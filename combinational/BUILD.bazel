@@ -1,0 +1,15 @@
+load("//bazel:systemverilog.bzl", "sv_test_pair")
+
+sv_test_pair(
+    name = "test",
+    top = "comb_testbench",
+    srcs = [
+        "//util:tb_util.sv",
+        "sillyfunction.sv",
+        "gates.sv",
+        "xorfour.sv",
+        "minmaj.sv",
+        "sevensegment.sv",
+        "comb_testbench.sv",
+    ],
+)

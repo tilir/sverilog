@@ -1,0 +1,11 @@
+load("//bazel:systemverilog.bzl", "sv_test_pair")
+
+sv_test_pair(
+    name = "test",
+    top = "counter_testbench",
+    srcs = [
+        "//util:tb_util.sv",
+        "counter.sv",
+        "counter_bench.sv",
+    ],
+)

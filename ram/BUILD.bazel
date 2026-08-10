@@ -1,0 +1,13 @@
+load("//bazel:systemverilog.bzl", "sv_test_pair")
+
+sv_test_pair(
+    name = "test",
+    top = "ram_testbench",
+    srcs = [
+        "//util:tb_util.sv",
+        "ram.sv",
+        "ram_testbench.sv",
+    ],
+    ignore_timescale = True,
+    iverilog = False,
+)

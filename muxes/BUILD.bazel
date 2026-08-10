@@ -1,0 +1,11 @@
+load("//bazel:systemverilog.bzl", "sv_test_pair")
+
+sv_test_pair(
+    name = "test",
+    top = "muxes_testbench",
+    srcs = [
+        "//util:tb_util.sv",
+        "muxes.sv",
+        "muxes_testbench.sv",
+    ],
+)

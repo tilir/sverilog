@@ -1,0 +1,4 @@
+module(
+    name = "sverilog",
+    version = "0.1.0",
+)

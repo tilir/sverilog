@@ -25,6 +25,24 @@ Build and run only the combinational examples:
 
     cmake -S . -B build && cmake --build build --target combinational
 
+CMake remains the primary build. As a compact Bazel alternative, the same
+self-checking suites can also be built and run as actual Bazel tests:
+
+    bazel test //:verilator_tests
+    bazel test //:iverilog_tests
+    bazel test //:all_tests
+
+Run one suite directly, for example:
+
+    bazel test //combinational:test_verilator
+
+The Bazel files have no external module dependencies. The small rule in
+`bazel/systemverilog.bzl` deliberately finds `verilator`, `iverilog`, and
+`vvp` in `PATH`, just like a local teaching build. It is therefore simple to
+read, but not a hermetic toolchain suitable for remote execution. Bazelisk
+uses the version pinned in `.bazelversion`. RMC experiments and Yosys
+synthesis remain CMake-only.
+
 Build and run only the multiplexor examples:
 
     cmake -S . -B build && cmake --build build --target muxes

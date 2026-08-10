@@ -1,6 +1,7 @@
 # Out-of-source CMake builds
 /build*/
 obj_dir/
+/bazel-*
 
 # Simulation output
 *.fst
