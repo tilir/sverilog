@@ -1,5 +1,7 @@
 # System Verilog samples
 
+[![CI](https://github.com/tilir/sverilog/actions/workflows/ci.yml/badge.svg)](https://github.com/tilir/sverilog/actions/workflows/ci.yml)
+
 Personal system verilog examples and small projects
 
 Using verilator 5.020

@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  simulation:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Verilator
+            simulator: verilator
+            package: verilator
+          - name: Icarus Verilog
+            simulator: iverilog
+            package: iverilog
+
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@v6
+
+      - name: Install ${{ matrix.name }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --yes ${{ matrix.package }}
+
+      - name: Show tool versions
+        run: |
+          cmake --version
+          if [ "${{ matrix.simulator }}" = "verilator" ]; then
+            verilator --version
+          else
+            iverilog -V
+          fi
+
+      - name: Configure
+        run: >-
+          cmake -S . -B build
+          -DSIMULATOR=${{ matrix.simulator }}
+          -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build and run tests
+        run: cmake --build build --parallel 2
