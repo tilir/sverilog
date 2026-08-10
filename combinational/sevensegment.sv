@@ -29,5 +29,6 @@ module sevensegment(input logic [3:0] data,
       4'hE: seg = 7'b1_00_1_11_1;
       4'hF: seg = 7'b1_00_0_11_1;
       default: seg = 7'h0;
+      endcase
     end
 endmodule;
