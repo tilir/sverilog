@@ -22,7 +22,7 @@ endmodule;
 // Harris and Harris example 4.10
 module tristate(input logic[3:0] a,
                 input logic en,
-                output logic[3:0] y);
+                output wire[3:0] y);
   assign y = en ? a : 4'bz;
 endmodule;
 
@@ -40,7 +40,7 @@ endmodule;
 // Harris and Harris example 4.15
 module mux2tristate(input logic[3:0] d0, d1,
                     input logic s,
-                    output logic[3:0] y);
+                    output wire[3:0] y);
   tristate t0(d0, ~s, y);
   tristate t1(d1, s, y);
 endmodule;
@@ -48,8 +48,8 @@ endmodule;
 // even more structural approach
 module mux4tristate(input logic[3:0] d0, d1, d2, d3,
                     input logic[1:0] s,
-                    output logic[3:0] y);
-  logic[3:0] low, high;
+                    output wire[3:0] y);
+  wire[3:0] low, high;
   mux2tristate lowmux(d0, d1, s[0], low);
   mux2tristate highmux(d2, d3, s[0], high);
   mux2tristate finalmux(low, high, s[1], y);
