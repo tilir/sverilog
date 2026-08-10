@@ -1,88 +1,54 @@
-# System Verilog samples
+# SystemVerilog samples
 
 [![CI](https://github.com/tilir/sverilog/actions/workflows/ci.yml/badge.svg)](https://github.com/tilir/sverilog/actions/workflows/ci.yml)
 
-Personal SystemVerilog examples and small projects. The test suites use
-Verilator by default; Icarus Verilog is supported where its SystemVerilog
-frontend can compile the example.
+Small SystemVerilog designs and experiments collected while learning the
+language. Most examples have self-checking testbenches shared between
+Verilator and Icarus Verilog. CMake is the primary build system; Bazel is a
+small alternative implementation kept for comparison and experimentation.
 
-Build line:
+## Quick start
 
-    cmake -DCMAKE_BUILD_TYPE=Release -S . -B build && cmake --build ./build
+Run the regular test suites with Verilator:
 
-Verilator is used by default. Select Icarus Verilog when configuring a
-separate build directory:
+```sh
+cmake -S . -B build -DENABLE_RMC=OFF
+cmake --build build
+```
 
-    cmake -S . -B build-iverilog -DSIMULATOR=iverilog
-    cmake --build build-iverilog
+Or run the same supported suites with Bazel:
 
-The Icarus configuration builds the `combinational`, `muxes`, `latches`, and
-`counter` test suites. RMC experiments and the interface-based RAM remain in
-the Verilator configuration because they use unsupported SystemVerilog
-constructs.
+```sh
+bazel test //:all_tests
+```
 
-Build and run only the combinational examples:
+See [Building and testing](docs/building-and-testing.md) for simulator
+selection, individual targets, CI behavior, and the differences between the
+two build systems.
 
-    cmake -S . -B build && cmake --build build --target combinational
+## Repository map
 
-CMake remains the primary build. As a compact Bazel alternative, the same
-self-checking suites can also be built and run as actual Bazel tests:
+| Directory | Contents |
+| --- | --- |
+| `combinational` | Basic gates, Boolean functions, XOR, minority logic, and a seven-segment decoder |
+| `muxes` | Behavioral, structural, and tristate multiplexors |
+| `latches` | Gate-level and behavioral SR latches |
+| `counter` | A synchronous loadable up/down counter |
+| `ram` | Synchronous RAM using interfaces and modports |
+| `util` | Shared self-checking testbench scoreboard |
+| `rmc` | Independent one-file language experiments |
+| `synth` | Designs selected for Yosys synthesis |
+| `cmake`, `bazel` | Reusable build helpers |
 
-    bazel test //:verilator_tests
-    bazel test //:iverilog_tests
-    bazel test //:all_tests
+The directories roughly progress from combinational logic to stateful
+designs. `rmc` is intentionally less structured: it is a scratchpad rather
+than part of the regular regression suite.
 
-Run one suite directly, for example:
+## More documentation
 
-    bazel test //combinational:test_verilator
+- [Building and testing](docs/building-and-testing.md)
+- [Adding examples and RMC experiments](docs/adding-examples.md)
+- [Synthesis with Yosys](docs/synthesis.md)
 
-The Bazel files have no external module dependencies. The small rule in
-`bazel/systemverilog.bzl` deliberately finds `verilator`, `iverilog`, and
-`vvp` in `PATH`, just like a local teaching build. It is therefore simple to
-read, but not a hermetic toolchain suitable for remote execution. Bazelisk
-uses the version pinned in `.bazelversion`. RMC experiments and Yosys
-synthesis remain CMake-only.
-
-Build and run only the multiplexor examples:
-
-    cmake -S . -B build && cmake --build build --target muxes
-
-Build and run only the latch examples:
-
-    cmake -S . -B build && cmake --build build --target latches
-
-Build and run the interface-based RAM example (Verilator):
-
-    cmake -S . -B build && cmake --build build --target ram
-
-Build all single-file experiments, or one experiment by name (Verilator):
-
-    cmake --build build --target rmc
-    cmake --build build --target run_rmc_readmem_check
-
-RMC is enabled for local builds by default but excluded from CI. It can be
-disabled explicitly with `-DENABLE_RMC=OFF`.
-
-To add an experiment, create `rmc/<name>.sv` containing `module <name>`.
-CMake discovers it automatically and creates `rmc_<name>` (compile) and
-`run_rmc_<name>` (compile and run) targets. Supporting `.txt`, `.mem`, and
-`.hex` files are copied to the experiment working directory automatically.
-
-Synthesize a few example designs when Yosys is installed:
-
-    cmake --build build --target synth
-
-Individual targets include `synth_counter`, `synth_gates`,
-`synth_mux4_behavioral`, and `synth_mux4_structural`. Generated JSON,
-structural Verilog, and synthesis logs are placed under `build/synth/`.
-
-Contents (in order of teaching):
-
-* rmc -- simple tests with system verilog, like readmemb
-* util -- shared self-checking testbench scoreboard
-* combinational -- combinational logic examples and exhaustive tests
-* muxes -- behavioral, structural, and tristate multiplexors
-* latches -- gate-level and behavioral SR latches
-* counter -- loadable up/down counter
-* ram -- synchronous RAM using interfaces and modports
-* synth -- selected Yosys synthesis experiments
+This is a learning repository, so examples favor readability and visible
+behavior over reusable IP or production-grade verification infrastructure.
