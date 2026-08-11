@@ -3,6 +3,7 @@ test_suite(
     tests = [
         "//combinational:test_verilator",
         "//counter:test_verilator",
+        "//crc:test_verilator",
         "//latches:test_verilator",
         "//muxes:test_verilator",
         "//ram:test_verilator",
@@ -14,6 +15,7 @@ test_suite(
     tests = [
         "//combinational:test_iverilog",
         "//counter:test_iverilog",
+        "//crc:test_iverilog",
         "//latches:test_iverilog",
         "//muxes:test_iverilog",
     ],

@@ -1,0 +1,12 @@
+load("//bazel:systemverilog.bzl", "sv_test_pair")
+
+sv_test_pair(
+    name = "test",
+    top = "crc_testbench",
+    srcs = [
+        "//util:tb_util.sv",
+        "crc.sv",
+        "crc_testbench.sv",
+    ],
+    ignore_timescale = True,
+)

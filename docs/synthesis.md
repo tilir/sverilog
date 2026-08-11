@@ -12,6 +12,7 @@ Individual targets are useful when comparing one implementation at a time:
 
 ```sh
 cmake --build build --target synth_counter
+cmake --build build --target synth_crc
 cmake --build build --target synth_gates
 cmake --build build --target synth_mux4_behavioral
 cmake --build build --target synth_mux4_structural

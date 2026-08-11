@@ -31,9 +31,9 @@ cmake -S . -B build-iverilog -DSIMULATOR=iverilog
 cmake --build build-iverilog
 ```
 
-Icarus builds `combinational`, `muxes`, `latches`, and `counter`. The RAM
-example uses interfaces and modports that this build does not support. RMC is
-also Verilator-only.
+Icarus builds `combinational`, `muxes`, `latches`, `counter`, and `crc`. The
+RAM example uses interfaces and modports that this build does not support.
+RMC is also Verilator-only.
 
 Each suite has a public target that compiles and runs it:
 
@@ -42,6 +42,7 @@ cmake --build build --target combinational
 cmake --build build --target muxes
 cmake --build build --target latches
 cmake --build build --target counter
+cmake --build build --target crc
 cmake --build build --target ram
 ```
 

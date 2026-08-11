@@ -32,6 +32,7 @@ add_subdirectory(combinational)
 add_subdirectory(muxes)
 add_subdirectory(latches)
 add_subdirectory(counter)
+add_subdirectory(crc)
 
 IF(SIMULATOR STREQUAL "verilator")
   if(ENABLE_RMC)

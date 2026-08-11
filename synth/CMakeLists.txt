@@ -2,6 +2,10 @@ ADD_YOSYS_SYNTH(counter
   TOP counter
   SOURCES ${CMAKE_SOURCE_DIR}/counter/counter.sv)
 
+ADD_YOSYS_SYNTH(crc
+  TOP crc16_8bit
+  SOURCES ${CMAKE_SOURCE_DIR}/crc/crc.sv)
+
 ADD_YOSYS_SYNTH(gates
   TOP gates
   SOURCES ${CMAKE_SOURCE_DIR}/combinational/gates.sv)
@@ -17,6 +21,7 @@ ADD_YOSYS_SYNTH(mux4_structural
 add_custom_target(synth
   DEPENDS
     synth_counter
+    synth_crc
     synth_gates
     synth_mux4_behavioral
     synth_mux4_structural)
