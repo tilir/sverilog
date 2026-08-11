@@ -2,9 +2,23 @@ ADD_YOSYS_SYNTH(counter
   TOP counter
   SOURCES ${CMAKE_SOURCE_DIR}/counter/counter.sv)
 
-ADD_YOSYS_SYNTH(crc
-  TOP crc16_8bit
+ADD_YOSYS_SYNTH(crc_equations
+  TOP crc16_8bit_equations
   SOURCES ${CMAKE_SOURCE_DIR}/crc/crc.sv)
+
+ADD_YOSYS_SYNTH(crc_loop
+  TOP crc16_8bit_loop
+  SOURCES ${CMAKE_SOURCE_DIR}/crc/crc.sv)
+
+ADD_YOSYS_SYNTH(crc_table
+  TOP crc16_8bit_table
+  SOURCES ${CMAKE_SOURCE_DIR}/crc/crc.sv)
+
+add_custom_target(synth_crc
+  DEPENDS
+    synth_crc_equations
+    synth_crc_loop
+    synth_crc_table)
 
 ADD_YOSYS_SYNTH(gates
   TOP gates

@@ -34,7 +34,7 @@ two build systems.
 | `muxes` | Behavioral, structural, and tristate multiplexors |
 | `latches` | Gate-level and behavioral SR latches |
 | `counter` | A synchronous loadable up/down counter |
-| `crc` | Byte-wide CRC-16/XMODEM implementation |
+| `crc` | Equation, unrolled-loop, and lookup-table CRC-16/XMODEM implementations |
 | `ram` | Synchronous RAM using interfaces and modports |
 | `util` | Shared self-checking testbench scoreboard |
 | `rmc` | Independent one-file language experiments |

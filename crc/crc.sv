@@ -1,4 +1,4 @@
-module crc16_8bit (
+module crc16_8bit_equations (
     input  logic        clk,
     input  logic        rst_n,
 
@@ -150,3 +150,91 @@ module crc16_8bit (
 
 endmodule
 
+// The same byte-wide update written as eight direct polynomial steps.
+// The loop bounds are constant, so synthesis unrolls this into combinational
+// logic; this is not an eight-cycle implementation.
+module crc16_8bit_loop (
+    input  logic        clk,
+    input  logic        rst_n,
+    input  logic        clear,
+    input  logic        enable,
+    input  logic [7:0]  data_in,
+    output logic [15:0] crc_out
+);
+
+  logic [15:0] crc_reg;
+  logic [15:0] crc_next;
+
+  always_comb begin
+    crc_next = crc_reg;
+    for (int bit_index = 7; bit_index >= 0; --bit_index) begin
+      if (crc_next[15] ^ data_in[bit_index])
+        crc_next = (crc_next << 1) ^ 16'h1021;
+      else
+        crc_next = crc_next << 1;
+    end
+  end
+
+  always_ff @(posedge clk) begin
+    if (!rst_n)
+      crc_reg <= 16'h0000;
+    else if (clear)
+      crc_reg <= 16'h0000;
+    else if (enable)
+      crc_reg <= crc_next;
+  end
+
+  assign crc_out = crc_reg;
+
+endmodule
+
+// Byte-wide CRC update using a 256-entry lookup table.  The table contents
+// are constants generated at elaboration time; synthesis may implement them
+// as ROM or lower them to muxes depending on the target technology and flow.
+module crc16_8bit_table (
+    input  logic        clk,
+    input  logic        rst_n,
+    input  logic        clear,
+    input  logic        enable,
+    input  logic [7:0]  data_in,
+    output logic [15:0] crc_out
+);
+
+  logic [15:0] crc_reg;
+  logic [15:0] crc_next;
+  logic [15:0] lookup [0:255];
+
+  function automatic logic [15:0] make_table_entry(input logic [7:0] index);
+    logic [15:0] value;
+    value = {index, 8'h00};
+    for (int bit_index = 0; bit_index < 8; ++bit_index) begin
+      if (value[15])
+        value = (value << 1) ^ 16'h1021;
+      else
+        value = value << 1;
+    end
+    make_table_entry = value;
+  endfunction
+
+  initial begin
+    for (int index = 0; index < 256; ++index)
+      lookup[index] = make_table_entry(8'(index));
+  end
+
+  always_comb begin
+    crc_next = {crc_reg[7:0], 8'h00} ^
+               lookup[crc_reg[15:8] ^ data_in];
+  end
+
+  always_ff @(posedge clk) begin
+    if (!rst_n)
+      crc_reg <= 16'h0000;
+    else if (clear)
+      crc_reg <= 16'h0000;
+    else if (enable)
+      crc_reg <= crc_next;
+  end
+
+  assign crc_out = crc_reg;
+
+endmodule

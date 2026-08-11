@@ -12,10 +12,19 @@ Individual targets are useful when comparing one implementation at a time:
 
 ```sh
 cmake --build build --target synth_counter
-cmake --build build --target synth_crc
+cmake --build build --target synth_crc_equations
+cmake --build build --target synth_crc_loop
+cmake --build build --target synth_crc_table
 cmake --build build --target synth_gates
 cmake --build build --target synth_mux4_behavioral
 cmake --build build --target synth_mux4_structural
+```
+
+The convenience target `synth_crc` builds all three CRC implementations for
+side-by-side comparison:
+
+```sh
+cmake --build build --target synth_crc
 ```
 
 Each target asks Yosys to read the selected SystemVerilog sources, elaborate
@@ -29,6 +38,12 @@ under `build/synth/<name>/`:
 The behavioral and structural mux4 targets are intentionally separate. Their
 outputs make it easy to see whether two differently written descriptions
 reduce to equivalent logic.
+
+The CRC targets offer a similar comparison: manually expanded equations, an
+eight-iteration algorithmic loop, and a 256-entry lookup table. The generic
+Yosys `synth` pass is free to recognize their common Boolean function, so the
+table need not survive as a memory in the resulting netlist. Mapping to a
+specific FPGA or cell library may produce different tradeoffs.
 
 These are synthesis demonstrations rather than sign-off flows. Testbenches,
 delays, assertions, and the RMC experiments are simulation material and are

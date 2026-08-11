@@ -11,10 +11,17 @@ module crc_testbench;
   logic        clear;
   logic        enable;
   logic [7:0]  data_in;
-  logic [15:0] crc_out;
+  logic [15:0] crc_equations;
+  logic [15:0] crc_loop;
+  logic [15:0] crc_table;
   logic [15:0] expected_crc;
 
-  crc16_8bit dut(clock, rst_n, clear, enable, data_in, crc_out);
+  crc16_8bit_equations equations_dut(
+    clock, rst_n, clear, enable, data_in, crc_equations);
+  crc16_8bit_loop loop_dut(
+    clock, rst_n, clear, enable, data_in, crc_loop);
+  crc16_8bit_table table_dut(
+    clock, rst_n, clear, enable, data_in, crc_table);
 
   initial begin
     clock = 0;
@@ -54,8 +61,14 @@ module crc_testbench;
   endfunction
 
   task automatic check_crc(input string operation);
-    check("crc.out", crc_out, expected_crc, 16,
+    check("crc.equations", crc_equations, expected_crc, 16,
           $sformatf("%s data=%02h", operation, data_in));
+    check("crc.loop", crc_loop, expected_crc, 16,
+          $sformatf("%s data=%02h", operation, data_in));
+    check("crc.table", crc_table, expected_crc, 16,
+          $sformatf("%s data=%02h", operation, data_in));
+    check("crc.equations_vs_loop", crc_equations, crc_loop, 16, operation);
+    check("crc.equations_vs_table", crc_equations, crc_table, 16, operation);
   endtask
 
   task automatic reset_dut;
@@ -156,7 +169,11 @@ module crc_testbench;
     clear_crc();
     for (int index = 0; index < 9; ++index)
       consume_and_check(check_byte(index), "check vector byte");
-    check("crc.check", crc_out, 16'h31C3, 16,
+    check("crc.equations.check", crc_equations, 16'h31C3, 16,
+          "CRC-16/XMODEM check value for 123456789");
+    check("crc.loop.check", crc_loop, 16'h31C3, 16,
+          "CRC-16/XMODEM check value for 123456789");
+    check("crc.table.check", crc_table, 16'h31C3, 16,
           "CRC-16/XMODEM check value for 123456789");
     end_test("123456789 check vector");
   endtask
